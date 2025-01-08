@@ -10,7 +10,7 @@ load_dotenv()
 current_path = Path(__file__).parent
 
 def get_resume(company_name: str):
-    resume_path =  f"./documents/{company_name}/resume.pdf"
+    resume_path =  f"./documents/{company_name}/resume.md"
     md = MarkItDown()
     return md.convert(resume_path).text_content
 
@@ -34,10 +34,15 @@ def main(company_name: str, resume_name: str):
     template = get_template()
 
     system_prompt = f"""
-            As an expert resume writer, analyze the following original resume and job description,
-            then create a tailored version of the resume that highlights relevant experience and skills
-            for the specific job. Keep all the original resume content and adjust the responsibilites to fit the job.
-            Please follow the template provided for the output.
+            You are an expert resume writer for software developers and software leadership. 
+            You will get a resume template in markdown. You will get a resume named that lists the jobs a person has done. 
+            Each job has the company, position title, start and end date, location. 
+            It will also have one or more options listed below it depending on the role being applied for. 
+
+
+            Each option will have a line that looks like **Option [number]: Description of what kind of role it should be used for.**
+
+            You are to take the appriorpriate option and turn it into 3-4 bullet points highly related to the job listed as the job description.
 
             Original Resume:
             {original_resume}
@@ -45,7 +50,7 @@ def main(company_name: str, resume_name: str):
             Job Description:
             {job_description}
 
-            Template:
+            Resume Template:
             {template}
 
             Please provide a tailored resume that:
@@ -61,9 +66,11 @@ def main(company_name: str, resume_name: str):
             - Quantify achievements: Where possible, include metrics (e.g., "Improved X by Y%") to highlight the impact of your work.
             - If you are a thinking model do not output the plan into the markdown file.
             """
-
+    print(system_prompt)
+    
     model_name = os.environ.get("AI_RESUME_GEMINI_AI_MODEL", "gemini-2.0-flash-exp")    
     api_key = os.environ.get("AI_RESUME_GOOGLE_API_KEY")
+    print(api_key)
     model = GeminiModel(
         model_name,
         api_key=api_key,
