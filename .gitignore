@@ -173,6 +173,7 @@ cython_debug/
 
 # Documents - ignore subdirectories but keep root files
 documents/*/
+documents/resume.md
 
 # macOS system files
 **/.DS_Store

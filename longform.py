@@ -11,6 +11,8 @@ current_path = Path(__file__).parent
 
 def get_resume(company_name: str):
     resume_path =  f"./documents/{company_name}/resume.md"
+    if not os.path.exists(resume_path):
+        resume_path = "./documents/resume.md"
     md = MarkItDown()
     return md.convert(resume_path).text_content
 
@@ -37,12 +39,12 @@ def main(company_name: str, resume_name: str):
             You are an expert resume writer for software developers and software leadership. 
             You will get a resume template in markdown. You will get a resume named that lists the jobs a person has done. 
             Each job has the company, position title, start and end date, location. 
+            
             It will also have one or more options listed below it depending on the role being applied for. 
-
 
             Each option will have a line that looks like **Option [number]: Description of what kind of role it should be used for.**
 
-            You are to take the appriorpriate option and turn it into 3-4 bullet points highly related to the job listed as the job description.
+            You are to take the appriorpriate option and turn it into 4+ bullet points highly related to the job listed as the job description.
 
             Original Resume:
             {original_resume}
@@ -54,23 +56,30 @@ def main(company_name: str, resume_name: str):
             {template}
 
             Please provide a tailored resume that:
+            - Follows the design provided in the resume template.
             - The Name of each company Should be bold and the same font and color as everything else
             - Right align dates [Start Date] - [End Date]
-            - Keep each job to 3 or 4  high quality bullets. If the job mentions a specific technology please incldue it in bullet points
+            - Keep each job to 4+  high quality bullets. If the job mentions a specific technology please incldue it in bullet points
             - Emphasizes relevant experience and skills
+            - Only include skills in the skills section relevant to the job
             - Uses keywords from the job description
             - Follows professional resume formatting
             - Keep all of the information from the original resume such as dates, names addresses
             - Output should be just the resume, nothing else
             - Replace placeholders: Replace placeholders like [Your Full Name], [Location], [Email Address], etc., with the actual details.
-            - Quantify achievements: Where possible, include metrics (e.g., "Improved X by Y%") to highlight the impact of your work.
+            - Quantify achievements: Where possible, include metrics (e.g., "Improved X by Y%") to highlight the impact of the work.
             - If you are a thinking model do not output the plan into the markdown file.
             """
-    print(system_prompt)
+
+    company_output_folder = current_path / "documents" / company_name / "output"
+    company_output_folder.mkdir(parents=True, exist_ok=True)
+
+    with open(f"{company_output_folder}/prompt.txt", "w", encoding="utf-8") as file:
+        file.write(system_prompt)
     
-    model_name = os.environ.get("AI_RESUME_GEMINI_AI_MODEL", "gemini-2.0-flash-exp")    
+    model_name="gemini-2.0-flash-thinking-exp-1219"
+    # model_name = os.environ.get("AI_RESUME_GEMINI_AI_MODEL", "gemini-2.0-flash-exp")    
     api_key = os.environ.get("AI_RESUME_GOOGLE_API_KEY")
-    print(api_key)
     model = GeminiModel(
         model_name,
         api_key=api_key,
@@ -81,10 +90,12 @@ def main(company_name: str, resume_name: str):
         system_prompt=system_prompt,
     )
 
-    result = resume_agent.run_sync("Provide new resume following the bullets above")
-
-    company_output_folder = current_path / "documents" / company_name / "output"
-    company_output_folder.mkdir(parents=True, exist_ok=True)
+    try:
+        result = resume_agent.run_sync("Provide new resume")
+    except Exception as e:
+        print(e)
+    # company_output_folder = current_path / "documents" / company_name / "output"
+    # company_output_folder.mkdir(parents=True, exist_ok=True)
 
     resume_name_without_extension = os.path.splitext(resume_name)[0]
     

@@ -1,6 +1,6 @@
 # [Your Full Name]
 
-[Location] • [Email Address] • [LinkedIn Profile URL]
+[Location] • [Email Address] • [LinkedIn Profile URL] • [Personal website]
 
 ## [Job Title]
 
