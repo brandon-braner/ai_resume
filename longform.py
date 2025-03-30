@@ -24,22 +24,31 @@ def get_template():
 def get_job_description_local(company_name):
     company_folder = current_path / "documents" / company_name
     company_folder.mkdir(parents=True, exist_ok=True)
-    job_description_path = company_folder / "job_description.txt"
+    job_description_path = company_folder / "jd.txt"
     with open(job_description_path, "r") as file:
         return file.read()
-    
+
+def get_custom_prompt(company_name):
+    company_folder = current_path / "documents" / company_name
+    company_folder.mkdir(parents=True, exist_ok=True)
+    custom_prompt_path = company_folder / "cp.txt"
+    if os.path.exists(custom_prompt_path):
+        with open(custom_prompt_path, "r") as file:
+            return file.read()
+    return ""
     
 
 def main(company_name: str, resume_name: str):
     original_resume = get_resume(company_name)
     job_description = get_job_description_local(company_name)
     template = get_template()
+    custom_prompt = get_custom_prompt(company_name)
 
     system_prompt = f"""
             You are an expert resume writer for software developers and software leadership. 
             You will get a resume template in markdown. You will get a resume named that lists the jobs a person has done. 
             Each job has the company, position title, start and end date, location. 
-            
+             
             It will also have one or more options listed below it depending on the role being applied for. 
 
             Each option will have a line that looks like **Option [number]: Description of what kind of role it should be used for.**
@@ -56,11 +65,13 @@ def main(company_name: str, resume_name: str):
             {template}
 
             Please provide a tailored resume that:
+            - The first line / name should always be a h1 by using # in markdown
+            - Do not include ``` or ```markup tags in the output.
             - Follows the design provided in the resume template.
             - The Name of each company Should be bold and the same font and color as everything else
             - Right align dates [Start Date] - [End Date]
             - Keep each job to 4+  high quality bullets. If the job mentions a specific technology please incldue it in bullet points
-            - Emphasizes relevant experience and skills
+            - Emphasizes relevant experience and skills            
             - Only include skills in the skills section relevant to the job
             - Uses keywords from the job description
             - Follows professional resume formatting
@@ -68,7 +79,11 @@ def main(company_name: str, resume_name: str):
             - Output should be just the resume, nothing else
             - Replace placeholders: Replace placeholders like [Your Full Name], [Location], [Email Address], etc., with the actual details.
             - Quantify achievements: Where possible, include metrics (e.g., "Improved X by Y%") to highlight the impact of the work.
-            - If you are a thinking model do not output the plan into the markdown file.
+            - If you are a thinking model do not output the plan into the markdown file.            
+            
+            For this specific job also follow the rules set forth below
+            {custom_prompt}
+
             """
 
     company_output_folder = current_path / "documents" / company_name / "output"
