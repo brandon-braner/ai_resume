@@ -1,5 +1,8 @@
 
-.PHONY: gen_resume gen_longform_resume
+.PHONY: gen_resume gen_longform_resume sync_jobs
+
+sync_jobs:
+	@uv run sync_jobs.py
 
 gen_resume:
 	@if [ -z "$(company)" ]; then \
